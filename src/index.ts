@@ -6,6 +6,9 @@ import { userRoutes } from './routes/users'
 import { tuningRoutes } from './routes/tunings'
 import { fuelEfficiencyRoutes } from './routes/fuel_efficiencies'
 import { accidentsRoutes } from './routes/accidents'
+import { imagesRoutes } from './routes/images'
+import { maintenancesRoutes } from './routes/maintenances'
+import { periodicInspectionsRoutes } from './routes/periodic_inspections'
 
 export interface Bindings {
     R2_SECRET_ACCESS_KEY: any
@@ -33,10 +36,14 @@ const app = new Hono<{ Bindings: Bindings }>()
         }
         return verifyFirebaseAuth({ projectId })(c, next)
     })
+    .route('/accidents', accidentsRoutes)
     .route('/cars', carRoutes)
+    .route('/fuel_efficiencies', fuelEfficiencyRoutes)
+    .route('/images', imagesRoutes)
+    .route('/maintenances', maintenancesRoutes)
+    .route('/periodic_inspections', periodicInspectionsRoutes)
+    .route('/tunings', tuningRoutes)
     .route('/users', userRoutes)
-    .route("/tunings", tuningRoutes)
-    .route("/fuel_efficiencies", fuelEfficiencyRoutes)
 
     .get('/', (c) => c.text('AutoTrack API Running'))
 
