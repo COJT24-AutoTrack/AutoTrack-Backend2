@@ -1,29 +1,43 @@
-import { Hono } from "hono";
-import { verifyFirebaseAuth } from "@hono/firebase-auth";
+import { Hono } from 'hono'
+import { verifyFirebaseAuth } from '@hono/firebase-auth'
+import { cors } from 'hono/cors'
+import { carRoutes } from './routes/cars'
+import { userRoutes } from './routes/users'
+import { tuningRoutes } from './routes/tunings'
+import { fuelEfficiencyRoutes } from './routes/fuel_efficiencies'
+import { accidentsRoutes } from './routes/accidents'
 
 export interface Bindings {
-  DB: D1Database;
-  FIREBASE_PROJECT_ID: string;
-  PUBLIC_JWK_CACHE_KEY: string;
-  PUBLIC_JWK_CACHE_KV: KVNamespace;
+    R2_SECRET_ACCESS_KEY: any
+    R2_ACCESS_KEY_ID: any
+    R2_ENDPOINT_URL: any
+    BUCKET_NAME: any
+    DB: D1Database
+    FIREBASE_PROJECT_ID: string
+    PUBLIC_JWK_CACHE_KEY: string
+    PUBLIC_JWK_CACHE_KV: KVNamespace
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
-  .use("*", async (c, next) => {
-    const projectId = c.env.FIREBASE_PROJECT_ID;
-    if (!projectId) {
-      return c.json(
-        {
-          code: "config/missing-project-id",
-          message: "Firebase project ID is missing.",
-        },
-        500
-      );
-    }
-    return verifyFirebaseAuth({ projectId })(c, next);
-  })
-  .get("/", (c) => {
-    return c.text("Hello Hono!");
-  });
+    .use('*', cors())
+    .use('*', async (c, next) => {
+        const projectId = c.env.FIREBASE_PROJECT_ID
+        if (!projectId) {
+            return c.json(
+                {
+                    code: 'config/missing-project-id',
+                    message: 'Firebase project ID is missing.',
+                },
+                500,
+            )
+        }
+        return verifyFirebaseAuth({ projectId })(c, next)
+    })
+    .route('/cars', carRoutes)
+    .route('/users', userRoutes)
+    .route("/tunings", tuningRoutes)
+    .route("/fuel_efficiencies", fuelEfficiencyRoutes)
 
-export default app;
+    .get('/', (c) => c.text('AutoTrack API Running'))
+
+export default app

@@ -1,18 +1,21 @@
 {
-  "name": "autotrack-backend2",
-  "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy --minify"
-  },
-  "dependencies": {
-    "@hono/firebase-auth": "^1.4.2",
-    "hono": "^4.6.19"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250109.0",
-    "eslint": "^9.19.0",
-    "globals": "^15.14.0",
-    "typescript-eslint": "^8.22.0",
-    "wrangler": "^3.101.0"
-  }
+    "name": "autotrack-backend2",
+    "scripts": {
+        "dev": "wrangler dev",
+        "deploy": "wrangler deploy --minify"
+    },
+    "dependencies": {
+        "@hono/firebase-auth": "^1.4.2",
+        "@hono/zod-validator": "^0.4.2",
+        "hono": "^4.6.19",
+        "mysql2": "^3.12.0"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "^4.20250109.0",
+        "@types/node": "^22.12.0",
+        "globals": "^15.14.0",
+        "prettier": "^3.4.2",
+        "typescript-eslint": "^8.22.0",
+        "wrangler": "^3.101.0"
+    }
 }
