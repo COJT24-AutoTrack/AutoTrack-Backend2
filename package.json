@@ -1,14 +1,15 @@
 {
-    "name": "autotrack-backend2",
-    "scripts": {
-        "dev": "wrangler dev",
-        "deploy": "wrangler deploy --minify"
-    },
-    "dependencies": {
-        "hono": "^4.6.19"
-    },
-    "devDependencies": {
-        "@cloudflare/workers-types": "^4.20250109.0",
-        "wrangler": "^3.101.0"
-    }
+  "name": "autotrack-backend2",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify"
+  },
+  "dependencies": {
+    "@hono/firebase-auth": "^1.4.2",
+    "hono": "^4.6.19"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250109.0",
+    "wrangler": "^3.101.0"
+  }
 }
