@@ -5,6 +5,7 @@
     "deploy": "wrangler deploy --minify"
   },
   "dependencies": {
+    "@hono/firebase-auth": "^1.4.2",
     "hono": "^4.6.19"
   },
   "devDependencies": {
