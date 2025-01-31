@@ -3,20 +3,7 @@ import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { Bindings } from '../index'
 
-interface Car {
-    car_id: number
-    car_name: string
-    carmodelnum: string
-    car_color: string
-    car_mileage: number
-    car_isflooding: 0 | 1
-    car_issmoked: 0 | 1
-    car_image_url: string
-    created_at?: string
-    updated_at?: string
-}
-
-export const CarSchema = z.object({
+const CarSchema = z.object({
     car_name: z.string(),
     carmodelnum: z.string(),
     car_color: z.string(),
@@ -26,12 +13,12 @@ export const CarSchema = z.object({
     car_image_url: z.string().nullable().optional(),
 })
 
-export const CreateCarRequestSchema = z.object({
+const CreateCarRequestSchema = z.object({
     car: CarSchema, // car をネストする
     firebase_user_id: z.string(),
 })
 
-export const putCarSchema = z.object({
+const putCarSchema = z.object({
     car_id: z.number(),
     car_name: z.string(),
     carmodelnum: z.string(),
