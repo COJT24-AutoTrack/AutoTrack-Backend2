@@ -2,6 +2,8 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { Bindings } from '../index'
+import { v4 } from 'uuid'
+import { FuelEfficiency } from '../models/fuel_efficiency'
 
 const FuelEfficiencySchema = z.object({
     car_id: z.number().int(),
@@ -17,25 +19,30 @@ export const fuelEfficiencyRoutes = new Hono<{ Bindings: Bindings }>()
             const { car_id, fe_date, fe_amount, fe_unitprice, fe_mileage } =
                 await c.req.json()
 
-            const insertStmt = await c.env.DB.prepare(
-                `INSERT INTO FuelEfficiencies (car_id, fe_date, fe_amount, fe_unitprice, fe_mileage) VALUES (?1, ?2, ?3, ?4, ?5) RETURNING fe_id`,
-            )
-                .bind(car_id, fe_date, fe_amount, fe_unitprice, fe_mileage)
-                .run()
+            const fe_id = v4()
 
-            const fe_id = insertStmt.meta.last_row_id
-            if (!fe_id) {
-                return c.json(
-                    { error: 'Failed to insert fuel efficiency' },
-                    500,
+            await c.env.DB.prepare(
+                `INSERT INTO FuelEfficiencies (fe_id, car_id, fe_date, fe_amount, fe_unitprice, fe_mileage) VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
+            )
+                .bind(
+                    fe_id,
+                    car_id,
+                    fe_date,
+                    fe_amount,
+                    fe_unitprice,
+                    fe_mileage,
                 )
-            }
+                .run()
 
             const fuelEfficiency = await c.env.DB.prepare(
                 `SELECT * FROM FuelEfficiencies WHERE fe_id = ?1`,
             )
                 .bind(fe_id)
-                .first()
+                .first<FuelEfficiency>()
+
+            if (!fuelEfficiency) {
+                return c.json({ error: 'Fuel efficiency creation failed' }, 500)
+            }
 
             return c.json(fuelEfficiency, 201)
         } catch (err) {

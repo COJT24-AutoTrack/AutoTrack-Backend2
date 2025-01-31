@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { Bindings } from '../index'
+import { User } from '../models/user'
 
 const UserSchema = z.object({
     firebase_user_id: z.string(),
@@ -26,7 +27,7 @@ export const userRoutes = new Hono<{ Bindings: Bindings }>()
                 `SELECT * FROM Users WHERE firebase_user_id = ?1`,
             )
                 .bind(firebase_user_id)
-                .first()
+                .first<User>()
 
             if (!user) {
                 return c.json({ error: 'User creation failed' }, 500)

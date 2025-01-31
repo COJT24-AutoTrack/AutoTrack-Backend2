@@ -2,6 +2,8 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { Bindings } from '../index'
+import { v4 } from 'uuid'
+import { Maintenance } from '../models/maintenance'
 
 const MAINTENANCE_TITLES: Record<string, string> = {
     OilChange: 'Oil Change',
@@ -33,10 +35,13 @@ export const maintenancesRoutes = new Hono<{ Bindings: Bindings }>()
         try {
             const maintenanceData = applyMaintenanceLogic(await c.req.json())
 
-            const insertStmt = await c.env.DB.prepare(
-                `INSERT INTO Maintenances (car_id, maint_type, maint_title, maint_date, maint_description) VALUES (?1, ?2, ?3, ?4, ?5) RETURNING maint_id`,
+            const maint_id = v4()
+
+            await c.env.DB.prepare(
+                `INSERT INTO Maintenances (maint_id, car_id, maint_type, maint_title, maint_date, maint_description) VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
             )
                 .bind(
+                    maint_id,
                     maintenanceData.car_id,
                     maintenanceData.maint_type,
                     maintenanceData.maint_title,
@@ -45,16 +50,15 @@ export const maintenancesRoutes = new Hono<{ Bindings: Bindings }>()
                 )
                 .run()
 
-            const maint_id = insertStmt.meta.last_row_id
-            if (!maint_id) {
-                return c.json({ error: 'Failed to insert maintenance' }, 500)
-            }
-
             const maintenance = await c.env.DB.prepare(
                 `SELECT * FROM Maintenances WHERE maint_id = ?1`,
             )
                 .bind(maint_id)
-                .first()
+                .first<Maintenance>()
+
+            if (!maintenance) {
+                return c.json({ error: 'Maintenance creation failed' }, 500)
+            }
 
             return c.json(maintenance, 201)
         } catch (err) {

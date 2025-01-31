@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { Bindings } from '../index'
+import { v4 } from 'uuid'
 
 const CarSchema = z.object({
     car_name: z.string(),
@@ -31,7 +32,6 @@ const putCarSchema = z.object({
 
 export const carRoutes = new Hono<{ Bindings: Bindings }>()
     .post('/', zValidator('json', CreateCarRequestSchema), async (c) => {
-        console.log('=== Start Create Car ===')
         try {
             const { car, firebase_user_id } = await c.req.json()
             const {
@@ -44,10 +44,13 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
                 car_image_url,
             } = car
 
-            const insertCarStmt = await c.env.DB.prepare(
-                `INSERT INTO Cars (car_name, carmodelnum, car_color, car_mileage, car_isflooding, car_issmoked, car_image_url) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) RETURNING car_id`,
+            const car_id = v4()
+
+            await c.env.DB.prepare(
+                `INSERT INTO Cars (car_id, car_name, carmodelnum, car_color, car_mileage, car_isflooding, car_issmoked, car_image_url) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`,
             )
                 .bind(
+                    car_id,
                     car_name,
                     carmodelnum,
                     car_color,
@@ -57,25 +60,29 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
                     car_image_url || null,
                 )
                 .run()
+                .then(async () => {
+                    await c.env.DB.prepare(
+                        `INSERT INTO user_car (firebase_user_id, car_id) VALUES (?1, ?2)`,
+                    )
+                        .bind(firebase_user_id, car_id)
+                        .run()
 
-            const car_id = insertCarStmt.meta.last_row_id
-            if (!car_id) {
-                return c.json({ error: 'Failed to insert car' }, 500)
-            }
+                    const new_car = await c.env.DB.prepare(
+                        `SELECT * FROM Cars WHERE car_id = ?1`,
+                    )
+                        .bind(car_id)
+                        .first<Car>()
 
-            await c.env.DB.prepare(
-                `INSERT INTO user_car (firebase_user_id, car_id) VALUES (?1, ?2)`,
-            )
-                .bind(firebase_user_id, car_id)
-                .run()
+                    if (!new_car) {
+                        return c.json({ error: 'Car creation failed' }, 500)
+                    }
 
-            const new_car = await c.env.DB.prepare(
-                `SELECT * FROM Cars WHERE car_id = ?1`,
-            )
-                .bind(car_id)
-                .first()
-
-            return c.json(new_car, 201)
+                    return c.json(new_car, 201)
+                })
+                .catch((err) => {
+                    console.error('Error creating car:', err)
+                    return c.json({ error: 'Internal Server Error' }, 500)
+                })
         } catch (err) {
             if (err instanceof z.ZodError) {
                 return c.json(
@@ -89,8 +96,9 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .get('/', async (c) => {
         try {
-            const cars = await c.env.DB.prepare(`SELECT * FROM Cars`).all()
-            return c.json(cars.results, 200)
+            const { results } =
+                await c.env.DB.prepare(`SELECT * FROM Cars`).all<Car>()
+            return c.json(results, 200)
         } catch (err) {
             console.error('Error fetching cars:', err)
             return c.json({ error: 'Internal Server Error' }, 500)
@@ -103,17 +111,17 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
                 return c.json({ error: 'Invalid car_id' }, 400)
             }
 
-            const { results }: { results: Car[] } = await c.env.DB.prepare(
+            const results: Car | null = await c.env.DB.prepare(
                 `SELECT * FROM Cars WHERE car_id = ?1`,
             )
                 .bind(car_id)
-                .all()
+                .first()
 
             if (!results) {
                 return c.json({ error: 'Car not found' }, 404)
             }
 
-            return c.json(results[0], 200)
+            return c.json(results, 200)
         } catch (err) {
             console.error('Error fetching car:', err)
             return c.json({ error: 'Internal Server Error' }, 500)

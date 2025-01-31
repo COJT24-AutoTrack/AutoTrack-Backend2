@@ -2,6 +2,8 @@ import { Hono } from 'hono'
 import { Bindings } from '../index'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
+import { v4 } from 'uuid'
+import { Tuning } from '../models/tuning'
 
 const CreateTuningRequestSchema = z.object({
     tuning_id: z.number().int().optional(), // Optional because it's auto-generated
@@ -21,13 +23,30 @@ export const tuningRoutes = new Hono<{ Bindings: Bindings }>().post(
             const { tuning_name, tuning_price, tuning_image_url } =
                 CreateTuningRequestSchema.parse(await c.req.json())
 
+            const tuning_id = v4()
+
             await c.env.DB.prepare(
-                `INSERT INTO Tunings (tuning_name, tuning_price, tuning_image_url) VALUES (?1, ?2, ?3)`,
+                `INSERT INTO Tunings (tuning_id, tuning_name, tuning_price, tuning_image_url) VALUES (?1, ?2, ?3, ?4)`,
             )
-                .bind(tuning_name, tuning_price, tuning_image_url || null)
+                .bind(
+                    tuning_id,
+                    tuning_name,
+                    tuning_price,
+                    tuning_image_url || null,
+                )
                 .run()
 
-            return c.json({ status: 'new_tuning' })
+            const tuning = await c.env.DB.prepare(
+                `SELECT * FROM Tunings WHERE tuning_id = ?1`,
+            )
+                .bind(tuning_id)
+                .first<Tuning>()
+
+            if (!tuning) {
+                return c.json({ error: 'Tuning creation failed' }, 500)
+            }
+
+            return c.json(tuning, 201)
         } catch (err) {
             if (err instanceof z.ZodError) {
                 return c.json(

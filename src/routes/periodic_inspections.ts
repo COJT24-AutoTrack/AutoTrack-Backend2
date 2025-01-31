@@ -2,6 +2,8 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { Bindings } from '../index'
+import { v4 } from 'uuid'
+import { PeriodicInspection } from '../models/periodic_inspection'
 
 const PeriodicInspectionSchema = z.object({
     car_id: z.number().int(),
@@ -16,25 +18,26 @@ export const periodicInspectionsRoutes = new Hono<{
         try {
             const { car_id, pi_name, pi_date, pi_nextdate } = await c.req.json()
 
-            const insertStmt = await c.env.DB.prepare(
-                `INSERT INTO PeriodicInspection (car_id, pi_name, pi_date, pi_nextdate) VALUES (?1, ?2, ?3, ?4) RETURNING pi_id`,
-            )
-                .bind(car_id, pi_name, pi_date, pi_nextdate)
-                .run()
+            const pi_id = v4()
 
-            const pi_id = insertStmt.meta.last_row_id
-            if (!pi_id) {
-                return c.json(
-                    { error: 'Failed to insert periodic inspection' },
-                    500,
-                )
-            }
+            await c.env.DB.prepare(
+                `INSERT INTO PeriodicInspection (pi_id, car_id, pi_name, pi_date, pi_nextdate) VALUES (?1, ?2, ?3, ?4, ?5)`,
+            )
+                .bind(pi_id, car_id, pi_name, pi_date, pi_nextdate)
+                .run()
 
             const periodicInspection = await c.env.DB.prepare(
                 `SELECT * FROM PeriodicInspection WHERE pi_id = ?1`,
             )
                 .bind(pi_id)
-                .first()
+                .first<PeriodicInspection>()
+
+            if (!periodicInspection) {
+                return c.json(
+                    { error: 'Periodic inspection creation failed' },
+                    500,
+                )
+            }
 
             return c.json(periodicInspection, 201)
         } catch (err) {
