@@ -36,6 +36,7 @@ const app = new Hono<{ Bindings: Bindings }>()
         }
         return verifyFirebaseAuth({ projectId })(c, next)
     })
+    .basePath('/api')
     .route('/accidents', accidentsRoutes)
     .route('/cars', carRoutes)
     .route('/fuel_efficiencies', fuelEfficiencyRoutes)
