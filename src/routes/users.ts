@@ -11,39 +11,35 @@ const UserSchema = z.object({
     user_name: z.string(),
 })
 
-userRoutes.post(
-    '/',
-    zValidator('json', UserSchema),
-    async (c) => {
-        try {
-            const { firebase_user_id, user_email, user_name } = await c.req.json()
+userRoutes.post('/', zValidator('json', UserSchema), async (c) => {
+    try {
+        const { firebase_user_id, user_email, user_name } = await c.req.json()
 
-            await c.env.DB.prepare(
-                `INSERT INTO Users (firebase_user_id, user_email, user_name) VALUES (?1, ?2, ?3)`
-            )
-                .bind(firebase_user_id, user_email, user_name)
-                .run()
+        await c.env.DB.prepare(
+            `INSERT INTO Users (firebase_user_id, user_email, user_name) VALUES (?1, ?2, ?3)`,
+        )
+            .bind(firebase_user_id, user_email, user_name)
+            .run()
 
-            const user = await c.env.DB.prepare(
-                `SELECT * FROM Users WHERE firebase_user_id = ?1`
-            )
-                .bind(firebase_user_id)
-                .first()
+        const user = await c.env.DB.prepare(
+            `SELECT * FROM Users WHERE firebase_user_id = ?1`,
+        )
+            .bind(firebase_user_id)
+            .first()
 
-            if (!user) {
-                return c.json({ error: 'User creation failed' }, 500)
-            }
-
-            return c.json(user, 201)
-        } catch (err) {
-            if (err instanceof z.ZodError) {
-                return c.json({ error: 'Invalid input', details: err.errors }, 400)
-            }
-            console.error('Error creating user:', err)
-            return c.json({ error: 'Internal Server Error' }, 500)
+        if (!user) {
+            return c.json({ error: 'User creation failed' }, 500)
         }
+
+        return c.json(user, 201)
+    } catch (err) {
+        if (err instanceof z.ZodError) {
+            return c.json({ error: 'Invalid input', details: err.errors }, 400)
+        }
+        console.error('Error creating user:', err)
+        return c.json({ error: 'Internal Server Error' }, 500)
     }
-)
+})
 
 userRoutes.get('/', async (c) => {
     try {
@@ -60,7 +56,7 @@ userRoutes.get('/:firebase_user_id', async (c) => {
         const firebase_user_id = c.req.param('firebase_user_id')
 
         const user = await c.env.DB.prepare(
-            `SELECT * FROM Users WHERE firebase_user_id = ?1`
+            `SELECT * FROM Users WHERE firebase_user_id = ?1`,
         )
             .bind(firebase_user_id)
             .first()
@@ -76,6 +72,26 @@ userRoutes.get('/:firebase_user_id', async (c) => {
     }
 })
 
+userRoutes.get('/:firebase_user_id/cars', async (c) => {
+    try {
+        const firebase_user_id = c.req.param('firebase_user_id')
+
+        const cars = await c.env.DB.prepare(
+            `SELECT c.car_id, c.car_name, c.carmodelnum, c.car_color, c.car_mileage, c.car_isflooding, c.car_issmoked, c.car_image_url, c.created_at, c.updated_at
+             FROM Cars c
+             JOIN user_car uc ON c.car_id = uc.car_id
+             WHERE uc.firebase_user_id = ?1`,
+        )
+            .bind(firebase_user_id)
+            .all()
+
+        return c.json(cars.results, 200)
+    } catch (err) {
+        console.error('Error fetching user cars:', err)
+        return c.json({ error: 'Internal Server Error' }, 500)
+    }
+})
+
 userRoutes.put(
     '/:firebase_user_id',
     zValidator('json', UserSchema),
@@ -85,7 +101,7 @@ userRoutes.put(
             const { user_email, user_name } = await c.req.json()
 
             const result = await c.env.DB.prepare(
-                `UPDATE Users SET user_email = ?1, user_name = ?2 WHERE firebase_user_id = ?3`
+                `UPDATE Users SET user_email = ?1, user_name = ?2 WHERE firebase_user_id = ?3`,
             )
                 .bind(user_email, user_name, firebase_user_id)
                 .run()
@@ -95,7 +111,7 @@ userRoutes.put(
             }
 
             const updatedUser = await c.env.DB.prepare(
-                `SELECT * FROM Users WHERE firebase_user_id = ?1`
+                `SELECT * FROM Users WHERE firebase_user_id = ?1`,
             )
                 .bind(firebase_user_id)
                 .first()
@@ -105,7 +121,7 @@ userRoutes.put(
             console.error('Error updating user:', err)
             return c.json({ error: 'Internal Server Error' }, 500)
         }
-    }
+    },
 )
 
 userRoutes.delete('/:firebase_user_id', async (c) => {
@@ -113,7 +129,7 @@ userRoutes.delete('/:firebase_user_id', async (c) => {
         const firebase_user_id = c.req.param('firebase_user_id')
 
         const result = await c.env.DB.prepare(
-            `DELETE FROM Users WHERE firebase_user_id = ?1`
+            `DELETE FROM Users WHERE firebase_user_id = ?1`,
         )
             .bind(firebase_user_id)
             .run()
