@@ -27,7 +27,7 @@ export const imagesRoutes = new Hono<{ Bindings: Bindings }>().post(
 
             const url = `https://r2.autotrack.work/${objectKey}`
             console.log('Uploaded image:', url)
-            return c.json({ url })
+            return c.json({ imgURL: url })
         } catch (err) {
             if (err instanceof Error) {
                 return c.json({ message: err.message }, 400)

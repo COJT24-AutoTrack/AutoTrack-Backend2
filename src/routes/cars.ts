@@ -151,7 +151,7 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     .delete('/:car_id', async (c) => {
         try {
             const car_id = c.req.param('car_id')
-            if (car_id) {
+            if (!car_id) {
                 return c.json({ error: 'Invalid car_id' }, 400)
             }
 
