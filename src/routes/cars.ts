@@ -18,6 +18,16 @@ export const CreateCarRequestSchema = z.object({
     firebase_user_id: z.string(),
 })
 
+export const putCarSchema = z.object({
+    car_name: z.string(),
+    carmodelnum: z.string(),
+    car_color: z.string(),
+    car_mileage: z.number().int(),
+    car_isflooding: z.boolean(),
+    car_issmoked: z.boolean(),
+    car_image_url: z.string().nullable().optional(),
+})
+
 export const carRoutes = new Hono<{ Bindings: Bindings }>()
     .post('/', zValidator('json', CreateCarRequestSchema), async (c) => {
         console.log('=== Start Create Car ===')
@@ -108,6 +118,32 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
             return c.json({ error: 'Internal Server Error' }, 500)
         }
     })
+    .put('/:car_id', zValidator('json', putCarSchema), async (c) => {
+        try {
+            const car_id = parseInt(c.req.param('car_id'), 10)
+            const updatedCar = await c.req.json()
+
+            await c.env.DB.prepare(
+                `UPDATE Cars SET car_name = ?1, carmodelnum = ?2, car_color = ?3, car_mileage = ?4, car_isflooding = ?5, car_issmoked = ?6, car_image_url = ?7 WHERE car_id = ?8`,
+            )
+                .bind(
+                    updatedCar.car_name,
+                    updatedCar.carmodelnum,
+                    updatedCar.car_color,
+                    updatedCar.car_mileage,
+                    updatedCar.car_isflooding ? 1 : 0,
+                    updatedCar.car_issmoked ? 1 : 0,
+                    updatedCar.car_image_url,
+                    car_id,
+                )
+                .run()
+
+            return c.json({ message: 'Car updated successfully' }, 200)
+        } catch (err) {
+            console.error('Error updating car:', err)
+            return c.json({ error: 'Internal Server Error' }, 500)
+        }
+    })
     .delete('/:car_id', async (c) => {
         try {
             const car_id = parseInt(c.req.param('car_id'), 10)
@@ -164,6 +200,63 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
             return c.json({ message: 'Car image updated successfully' }, 200)
         } catch (err) {
             console.error('Error updating car image:', err)
+            return c.json({ error: 'Internal Server Error' }, 500)
+        }
+    })
+    .delete('/:car_id/image', async (c) => {
+        try {
+            const car_id = parseInt(c.req.param('car_id'), 10)
+            await c.env.DB.prepare(
+                `UPDATE Cars SET car_image_url = NULL WHERE car_id = ?1`,
+            )
+                .bind(car_id)
+                .run()
+
+            return c.json({ message: 'Car image deleted successfully' }, 200)
+        } catch (err) {
+            console.error('Error deleting car image:', err)
+            return c.json({ error: 'Internal Server Error' }, 500)
+        }
+    })
+    .get('/:car_id/tuning', async (c) => {
+        try {
+            const car_id = parseInt(c.req.param('car_id'), 10)
+            const tunings = await c.env.DB.prepare(
+                `SELECT * FROM Tunings WHERE car_id = ?1`,
+            )
+                .bind(car_id)
+                .all()
+            return c.json(tunings.results, 200)
+        } catch (err) {
+            console.error('Error fetching car tuning:', err)
+            return c.json({ error: 'Internal Server Error' }, 500)
+        }
+    })
+    .get('/:car_id/maintenance', async (c) => {
+        try {
+            const car_id = parseInt(c.req.param('car_id'), 10)
+            const maintenances = await c.env.DB.prepare(
+                `SELECT * FROM Maintenances WHERE car_id = ?1`,
+            )
+                .bind(car_id)
+                .all()
+            return c.json(maintenances.results, 200)
+        } catch (err) {
+            console.error('Error fetching car maintenance:', err)
+            return c.json({ error: 'Internal Server Error' }, 500)
+        }
+    })
+    .get('/:car_id/fuel_efficiency', async (c) => {
+        try {
+            const car_id = parseInt(c.req.param('car_id'), 10)
+            const fuel_efficiencies = await c.env.DB.prepare(
+                `SELECT * FROM FuelEfficiencies WHERE car_id = ?1`,
+            )
+                .bind(car_id)
+                .all()
+            return c.json(fuel_efficiencies.results, 200)
+        } catch (err) {
+            console.error('Error fetching fuel efficiency:', err)
             return c.json({ error: 'Internal Server Error' }, 500)
         }
     })
