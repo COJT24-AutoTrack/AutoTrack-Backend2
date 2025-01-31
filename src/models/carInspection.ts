@@ -1,5 +1,5 @@
 interface BaseCarInspection {
-    car_id: number
+    car_id: string
     is_kcar: 0 | 1
     version_info_1?: string
     registration_version_info?: string // 登録情報のバージョン情報

@@ -20,7 +20,7 @@ const CreateCarRequestSchema = z.object({
 })
 
 const putCarSchema = z.object({
-    car_id: z.number(),
+    car_id: z.string().uuid(),
     car_name: z.string(),
     carmodelnum: z.string(),
     car_color: z.string(),

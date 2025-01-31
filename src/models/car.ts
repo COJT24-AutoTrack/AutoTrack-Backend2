@@ -1,5 +1,5 @@
 interface Car {
-    car_id: number
+    car_id: string
     car_name: string
     carmodelnum: string
     car_color: string
