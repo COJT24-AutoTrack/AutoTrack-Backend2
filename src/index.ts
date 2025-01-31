@@ -47,5 +47,6 @@ const app = new Hono<{ Bindings: Bindings }>()
     .route('/users', userRoutes)
 
     .get('/', (c) => c.text('AutoTrack API Running'))
+    .get('/test', (c) => c.json({ message: 'Hello, World!' }))
 
 export default app
