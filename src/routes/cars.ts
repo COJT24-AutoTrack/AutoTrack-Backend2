@@ -32,6 +32,7 @@ const putCarSchema = z.object({
 
 export const carRoutes = new Hono<{ Bindings: Bindings }>()
     .post('/', zValidator('json', CreateCarRequestSchema), async (c) => {
+        console.log('c.req.json()', await c.req.json())
         try {
             const { car, firebase_user_id } = await c.req.json()
             const {
