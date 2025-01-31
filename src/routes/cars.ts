@@ -3,13 +3,26 @@ import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { Bindings } from '../index'
 
+interface Car {
+    car_id: number
+    car_name: string
+    carmodelnum: string
+    car_color: string
+    car_mileage: number
+    car_isflooding: 0 | 1
+    car_issmoked: 0 | 1
+    car_image_url: string
+    created_at?: string
+    updated_at?: string
+}
+
 export const CarSchema = z.object({
     car_name: z.string(),
     carmodelnum: z.string(),
     car_color: z.string(),
     car_mileage: z.number().int(),
-    car_isflooding: z.boolean(),
-    car_issmoked: z.boolean(),
+    car_isflooding: z.union([z.literal(0), z.literal(1)]),
+    car_issmoked: z.union([z.literal(0), z.literal(1)]),
     car_image_url: z.string().nullable().optional(),
 })
 
@@ -19,12 +32,13 @@ export const CreateCarRequestSchema = z.object({
 })
 
 export const putCarSchema = z.object({
+    car_id: z.number(),
     car_name: z.string(),
     carmodelnum: z.string(),
     car_color: z.string(),
-    car_mileage: z.number().int(),
-    car_isflooding: z.boolean(),
-    car_issmoked: z.boolean(),
+    car_mileage: z.number(),
+    car_isflooding: z.union([z.literal(0), z.literal(1)]),
+    car_issmoked: z.union([z.literal(0), z.literal(1)]),
     car_image_url: z.string().nullable().optional(),
 })
 
@@ -51,8 +65,8 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
                     carmodelnum,
                     car_color,
                     car_mileage,
-                    car_isflooding ? 1 : 0,
-                    car_issmoked ? 1 : 0,
+                    car_isflooding,
+                    car_issmoked,
                     car_image_url || null,
                 )
                 .run()
@@ -102,17 +116,17 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
                 return c.json({ error: 'Invalid car_id' }, 400)
             }
 
-            const car = await c.env.DB.prepare(
+            const { results }: { results: Car[] } = await c.env.DB.prepare(
                 `SELECT * FROM Cars WHERE car_id = ?1`,
             )
                 .bind(car_id)
-                .first()
+                .all()
 
-            if (!car) {
+            if (!results) {
                 return c.json({ error: 'Car not found' }, 404)
             }
 
-            return c.json(car, 200)
+            return c.json(results[0], 200)
         } catch (err) {
             console.error('Error fetching car:', err)
             return c.json({ error: 'Internal Server Error' }, 500)
@@ -131,8 +145,8 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
                     updatedCar.carmodelnum,
                     updatedCar.car_color,
                     updatedCar.car_mileage,
-                    updatedCar.car_isflooding ? 1 : 0,
-                    updatedCar.car_issmoked ? 1 : 0,
+                    updatedCar.car_isflooding,
+                    updatedCar.car_issmoked,
                     updatedCar.car_image_url,
                     car_id,
                 )

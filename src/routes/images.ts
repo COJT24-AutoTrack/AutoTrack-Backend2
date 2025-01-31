@@ -1,56 +1,38 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { zValidator } from '@hono/zod-validator'
 import { Bindings } from '../index'
 
-export const imagesRoutes = new Hono<{ Bindings: Bindings }>()
-
-const ImageUploadSchema = z.object({
-    file: z.instanceof(File)
+const imageUploadSchema = z.object({
+    file: z.instanceof(File),
 })
 
-imagesRoutes.post(
+export const imagesRoutes = new Hono<{ Bindings: Bindings }>().post(
     '/',
     async (c) => {
         try {
-            const bucket = c.env?.BUCKET_NAME
-            const endpoint = c.env?.R2_ENDPOINT_URL
-            const clientId = c.env?.R2_ACCESS_KEY_ID
-            const secret = c.env?.R2_SECRET_ACCESS_KEY
+            const formData = await c.req.formData()
+            const file = formData.get('file') as File | null
 
-            if (!bucket || !endpoint || !clientId || !secret) {
-                return c.json({ error: 'R2 credentials are not set' }, 500)
+            if (!file) {
+                return c.json({ message: 'No file uploaded' }, 400)
             }
+            const data = imageUploadSchema.parse({ file })
 
-            const body = await c.req.formData()
-            const file = body.get('file')
-
-            if (!(file instanceof File)) {
-                return c.json({ error: 'No file uploaded' }, 400)
-            }
-
-            const key = `images/${file.name}`
-            const r2 = new URL(endpoint)
-            const url = `${r2.protocol}//${bucket}.${r2.hostname}/${key}`
-
-            const response = await fetch(`${endpoint}/${bucket}/${key}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': file.type || 'application/octet-stream',
-                    'x-amz-acl': 'public-read',
-                    Authorization: `AWS ${clientId}:${secret}`
+            const objectKey = data.file.name
+            await c.env.R2.put(objectKey, data.file.stream(), {
+                httpMetadata: {
+                    contentType: data.file.type,
                 },
-                body: await file.arrayBuffer()
             })
 
-            if (!response.ok) {
-                return c.json({ error: 'Failed to upload file' }, 500)
-            }
+            const url = `https://r2.autotrack.work/${objectKey}`
 
-            return c.json({ url }, 201)
+            return c.json({ url })
         } catch (err) {
-            console.error('Error uploading image:', err)
-            return c.json({ error: 'Internal Server Error' }, 500)
+            if (err instanceof Error) {
+                return c.json({ message: err.message }, 400)
+            }
+            return c.json({ message: 'Unknown error occurred' }, 400)
         }
-    }
+    },
 )

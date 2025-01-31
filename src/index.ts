@@ -11,10 +11,7 @@ import { maintenancesRoutes } from './routes/maintenances'
 import { periodicInspectionsRoutes } from './routes/periodic_inspections'
 
 export interface Bindings {
-    R2_SECRET_ACCESS_KEY: string
-    R2_ACCESS_KEY_ID: string
-    R2_ENDPOINT_URL: string
-    BUCKET_NAME: string
+    R2: R2Bucket
     DB: D1Database
     FIREBASE_PROJECT_ID: string
     PUBLIC_JWK_CACHE_KEY: string
