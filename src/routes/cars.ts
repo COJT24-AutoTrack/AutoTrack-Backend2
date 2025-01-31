@@ -274,5 +274,3 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
             return c.json({ error: 'Internal Server Error' }, 500)
         }
     })
-
-export default carRoutes
