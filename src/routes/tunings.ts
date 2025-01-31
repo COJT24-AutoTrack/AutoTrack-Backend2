@@ -6,7 +6,7 @@ import { v4 } from 'uuid'
 import { Tuning } from '../models/tuning'
 
 const CreateTuningRequestSchema = z.object({
-    tuning_id: z.number().int().optional(), // Optional because it's auto-generated
+    car_id: z.string().uuid(),
     tuning_name: z.string(),
     tuning_price: z.number().int(),
     tuning_image_url: z.string().nullable().optional(), // Nullable for Option<String>
@@ -20,21 +20,20 @@ export const tuningRoutes = new Hono<{ Bindings: Bindings }>().post(
     zValidator('json', CreateTuningRequestSchema),
     async (c) => {
         try {
-            const { tuning_name, tuning_price, tuning_image_url } =
+            const { car_id, tuning_name, tuning_price, tuning_image_url } =
                 CreateTuningRequestSchema.parse(await c.req.json())
 
             const tuning_id = v4()
 
             await c.env.DB.prepare(
-                `INSERT INTO Tunings (tuning_id, tuning_name, tuning_price, tuning_image_url) VALUES (?1, ?2, ?3, ?4)`,
+                `INSERT INTO Tunings (tuning_id, car_id, tuning_name, tuning_price, tuning_image_url) VALUES (?1, ?2, ?3, ?4, ?5)`,
+            ).bind(
+                tuning_id,
+                car_id,
+                tuning_name,
+                tuning_price,
+                tuning_image_url || null,
             )
-                .bind(
-                    tuning_id,
-                    tuning_name,
-                    tuning_price,
-                    tuning_image_url || null,
-                )
-                .run()
 
             const tuning = await c.env.DB.prepare(
                 `SELECT * FROM Tunings WHERE tuning_id = ?1`,

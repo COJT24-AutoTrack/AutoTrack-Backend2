@@ -6,7 +6,7 @@ import { v4 } from 'uuid'
 import { FuelEfficiency } from '../models/fuel_efficiency'
 
 const FuelEfficiencySchema = z.object({
-    car_id: z.number().int(),
+    car_id: z.string().uuid(),
     fe_date: z.string().datetime(),
     fe_amount: z.number().positive(),
     fe_unitprice: z.number().positive(),
@@ -19,7 +19,13 @@ export const fuelEfficiencyRoutes = new Hono<{ Bindings: Bindings }>()
             const { car_id, fe_date, fe_amount, fe_unitprice, fe_mileage } =
                 await c.req.json()
 
+            console.log('car_id:', car_id)
+            console.log('fe_date:', fe_date)
+            console.log('fe_amount:', fe_amount)
+            console.log('fe_unitprice:', fe_unitprice)
+
             const fe_id = v4()
+            console.log('fe_id:', fe_id)
 
             await c.env.DB.prepare(
                 `INSERT INTO FuelEfficiencies (fe_id, car_id, fe_date, fe_amount, fe_unitprice, fe_mileage) VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
@@ -39,6 +45,11 @@ export const fuelEfficiencyRoutes = new Hono<{ Bindings: Bindings }>()
             )
                 .bind(fe_id)
                 .first<FuelEfficiency>()
+
+            console.log(
+                'Fuel efficiency created JSON:',
+                JSON.stringify(fuelEfficiency),
+            )
 
             if (!fuelEfficiency) {
                 return c.json({ error: 'Fuel efficiency creation failed' }, 500)

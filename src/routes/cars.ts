@@ -124,8 +124,10 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .put('/:car_id', zValidator('json', putCarSchema), async (c) => {
         try {
-            const car_id = (c.req.param('car_id'), 10)
+            const car_id = c.req.param('car_id')
+            console.log('car_id:', car_id)
             const updatedCar = await c.req.json()
+            console.log('updatedCar:', updatedCar)
 
             await c.env.DB.prepare(
                 `UPDATE Cars SET car_name = ?1, carmodelnum = ?2, car_color = ?3, car_mileage = ?4, car_isflooding = ?5, car_issmoked = ?6, car_image_url = ?7 WHERE car_id = ?8`,
@@ -141,6 +143,8 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
                     car_id,
                 )
                 .run()
+
+            console.log('updatedCar:', updatedCar)
 
             return c.json({ message: 'Car updated successfully' }, 200)
         } catch (err) {
@@ -209,7 +213,7 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .delete('/:car_id/image', async (c) => {
         try {
-            const car_id = (c.req.param('car_id'), 10)
+            const car_id = c.req.param('car_id')
             await c.env.DB.prepare(
                 `UPDATE Cars SET car_image_url = NULL WHERE car_id = ?1`,
             )
@@ -224,7 +228,7 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .get('/:car_id/tuning', async (c) => {
         try {
-            const car_id = (c.req.param('car_id'), 10)
+            const car_id = c.req.param('car_id')
             const tunings = await c.env.DB.prepare(
                 `SELECT * FROM Tunings WHERE car_id = ?1`,
             )
@@ -238,7 +242,7 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .get('/:car_id/maintenance', async (c) => {
         try {
-            const car_id = (c.req.param('car_id'), 10)
+            const car_id = c.req.param('car_id')
             const maintenances = await c.env.DB.prepare(
                 `SELECT * FROM Maintenances WHERE car_id = ?1`,
             )
@@ -252,7 +256,7 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .get('/:car_id/fuel_efficiency', async (c) => {
         try {
-            const car_id = (c.req.param('car_id'), 10)
+            const car_id = c.req.param('car_id')
             const fuel_efficiencies = await c.env.DB.prepare(
                 `SELECT * FROM FuelEfficiencies WHERE car_id = ?1`,
             )

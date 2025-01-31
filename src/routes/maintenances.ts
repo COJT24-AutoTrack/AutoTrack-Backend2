@@ -13,7 +13,7 @@ const MAINTENANCE_TITLES: Record<string, string> = {
 }
 
 const MaintenanceSchema = z.object({
-    car_id: z.number().int(),
+    car_id: z.string().uuid(),
     maint_type: z.string(),
     maint_title: z.string().optional(),
     maint_date: z.string().datetime(),

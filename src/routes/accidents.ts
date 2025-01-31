@@ -6,7 +6,7 @@ import { v4 } from 'uuid'
 import { Accident } from '../models/accident'
 
 const AccidentSchema = z.object({
-    car_id: z.number().int(),
+    car_id: z.string().uuid(),
     accident_date: z.string().datetime(),
     accident_description: z.string(),
 })
