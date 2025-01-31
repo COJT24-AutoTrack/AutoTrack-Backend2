@@ -9,9 +9,7 @@ const CreateTuningRequestSchema = z.object({
     car_id: z.string().uuid(),
     tuning_name: z.string(),
     tuning_price: z.number().int(),
-    tuning_image_url: z.string().nullable().optional(), // Nullable for Option<String>
-    created_at: z.string().datetime().optional(), // Optional because it's auto-generated
-    updated_at: z.string().datetime().optional(),
+    tuning_image_url: z.string().nullable().optional(),
     firebase_user_id: z.string(),
 })
 

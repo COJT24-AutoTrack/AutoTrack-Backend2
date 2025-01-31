@@ -16,7 +16,7 @@ const MaintenanceSchema = z.object({
     car_id: z.string().uuid(),
     maint_type: z.string(),
     maint_title: z.string().optional(),
-    maint_date: z.string().datetime(),
+    maint_date: z.string(),
     maint_description: z.string(),
 })
 

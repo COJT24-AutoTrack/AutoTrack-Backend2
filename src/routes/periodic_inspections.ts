@@ -8,8 +8,8 @@ import { PeriodicInspection } from '../models/periodic_inspection'
 const PeriodicInspectionSchema = z.object({
     car_id: z.string().uuid(),
     pi_name: z.string(),
-    pi_date: z.string().datetime(),
-    pi_nextdate: z.string().datetime(),
+    pi_date: z.string(),
+    pi_nextdate: z.string(),
 })
 export const periodicInspectionsRoutes = new Hono<{
     Bindings: Bindings

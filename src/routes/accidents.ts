@@ -7,7 +7,7 @@ import { Accident } from '../models/accident'
 
 const AccidentSchema = z.object({
     car_id: z.string().uuid(),
-    accident_date: z.string().datetime(),
+    accident_date: z.string(),
     accident_description: z.string(),
 })
 export const accidentsRoutes = new Hono<{ Bindings: Bindings }>()

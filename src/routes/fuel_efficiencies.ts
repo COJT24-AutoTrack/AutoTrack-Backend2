@@ -7,7 +7,7 @@ import { FuelEfficiency } from '../models/fuel_efficiency'
 
 const FuelEfficiencySchema = z.object({
     car_id: z.string().uuid(),
-    fe_date: z.string().datetime(),
+    fe_date: z.string(),
     fe_amount: z.number().positive(),
     fe_unitprice: z.number().positive(),
     fe_mileage: z.number().positive(),
@@ -23,6 +23,7 @@ export const fuelEfficiencyRoutes = new Hono<{ Bindings: Bindings }>()
             console.log('fe_date:', fe_date)
             console.log('fe_amount:', fe_amount)
             console.log('fe_unitprice:', fe_unitprice)
+            console.log('fe_mileage:', fe_mileage)
 
             const fe_id = v4()
             console.log('fe_id:', fe_id)
