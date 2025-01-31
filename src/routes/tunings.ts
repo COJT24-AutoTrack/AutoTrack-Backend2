@@ -18,20 +18,13 @@ export const tuningRoutes = new Hono<{ Bindings: Bindings }>().post(
     zValidator('json', CreateTuningRequestSchema),
     async (c) => {
         try {
-            const {
-                tuning_name,
-                tuning_price,
-                tuning_image_url,
-            } = CreateTuningRequestSchema.parse(await c.req.json())
+            const { tuning_name, tuning_price, tuning_image_url } =
+                CreateTuningRequestSchema.parse(await c.req.json())
 
             await c.env.DB.prepare(
                 `INSERT INTO Tunings (tuning_name, tuning_price, tuning_image_url) VALUES (?1, ?2, ?3)`,
             )
-                .bind(
-                    tuning_name,
-                    tuning_price,
-                    tuning_image_url || null,
-                )
+                .bind(tuning_name, tuning_price, tuning_image_url || null)
                 .run()
 
             return c.json({ status: 'new_tuning' })
