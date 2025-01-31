@@ -87,8 +87,8 @@ export const maintenancesRoutes = new Hono<{ Bindings: Bindings }>()
 
     .get('/:maint_id', async (c) => {
         try {
-            const maint_id = parseInt(c.req.param('maint_id'), 10)
-            if (isNaN(maint_id)) {
+            const maint_id = c.req.param('maint_id')
+            if (!maint_id) {
                 return c.json({ error: 'Invalid maint_id' }, 400)
             }
 
@@ -111,8 +111,8 @@ export const maintenancesRoutes = new Hono<{ Bindings: Bindings }>()
 
     .put('/:maint_id', zValidator('json', MaintenanceSchema), async (c) => {
         try {
-            const maint_id = parseInt(c.req.param('maint_id'), 10)
-            if (isNaN(maint_id)) {
+            const maint_id = c.req.param('maint_id')
+            if (!maint_id) {
                 return c.json({ error: 'Invalid maint_id' }, 400)
             }
 
@@ -153,8 +153,8 @@ export const maintenancesRoutes = new Hono<{ Bindings: Bindings }>()
 
     .delete('/:maint_id', async (c) => {
         try {
-            const maint_id = parseInt(c.req.param('maint_id'), 10)
-            if (isNaN(maint_id)) {
+            const maint_id = c.req.param('maint_id')
+            if (!maint_id) {
                 return c.json({ error: 'Invalid maint_id' }, 400)
             }
 

@@ -32,7 +32,6 @@ const putCarSchema = z.object({
 
 export const carRoutes = new Hono<{ Bindings: Bindings }>()
     .post('/', zValidator('json', CreateCarRequestSchema), async (c) => {
-        console.log('c.req.json()', await c.req.json())
         try {
             const { car, firebase_user_id } = await c.req.json()
             const {
@@ -61,29 +60,24 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
                     car_image_url || null,
                 )
                 .run()
-                .then(async () => {
-                    await c.env.DB.prepare(
-                        `INSERT INTO user_car (firebase_user_id, car_id) VALUES (?1, ?2)`,
-                    )
-                        .bind(firebase_user_id, car_id)
-                        .run()
 
-                    const new_car = await c.env.DB.prepare(
-                        `SELECT * FROM Cars WHERE car_id = ?1`,
-                    )
-                        .bind(car_id)
-                        .first<Car>()
+            await c.env.DB.prepare(
+                `INSERT INTO user_car (firebase_user_id, car_id) VALUES (?1, ?2)`,
+            )
+                .bind(firebase_user_id, car_id)
+                .run()
 
-                    if (!new_car) {
-                        return c.json({ error: 'Car creation failed' }, 500)
-                    }
+            const new_car = await c.env.DB.prepare(
+                `SELECT * FROM Cars WHERE car_id = ?1`,
+            )
+                .bind(car_id)
+                .first<Car>()
 
-                    return c.json(new_car, 201)
-                })
-                .catch((err) => {
-                    console.error('Error creating car:', err)
-                    return c.json({ error: 'Internal Server Error' }, 500)
-                })
+            if (!new_car) {
+                return c.json({ error: 'Car creation failed' }, 500)
+            }
+
+            return c.json(new_car, 201)
         } catch (err) {
             if (err instanceof z.ZodError) {
                 return c.json(
@@ -107,8 +101,8 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .get('/:car_id', async (c) => {
         try {
-            const car_id = parseInt(c.req.param('car_id'), 10)
-            if (isNaN(car_id)) {
+            const car_id = c.req.param('car_id')
+            if (!car_id) {
                 return c.json({ error: 'Invalid car_id' }, 400)
             }
 
@@ -130,7 +124,7 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .put('/:car_id', zValidator('json', putCarSchema), async (c) => {
         try {
-            const car_id = parseInt(c.req.param('car_id'), 10)
+            const car_id = (c.req.param('car_id'), 10)
             const updatedCar = await c.req.json()
 
             await c.env.DB.prepare(
@@ -156,8 +150,8 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .delete('/:car_id', async (c) => {
         try {
-            const car_id = parseInt(c.req.param('car_id'), 10)
-            if (isNaN(car_id)) {
+            const car_id = c.req.param('car_id')
+            if (car_id) {
                 return c.json({ error: 'Invalid car_id' }, 400)
             }
 
@@ -194,8 +188,8 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .put('/:car_id/image', async (c) => {
         try {
-            const car_id = parseInt(c.req.param('car_id'), 10)
-            if (isNaN(car_id)) {
+            const car_id = c.req.param('car_id')
+            if (!car_id) {
                 return c.json({ error: 'Invalid car_id' }, 400)
             }
 
@@ -215,7 +209,7 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .delete('/:car_id/image', async (c) => {
         try {
-            const car_id = parseInt(c.req.param('car_id'), 10)
+            const car_id = (c.req.param('car_id'), 10)
             await c.env.DB.prepare(
                 `UPDATE Cars SET car_image_url = NULL WHERE car_id = ?1`,
             )
@@ -230,7 +224,7 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .get('/:car_id/tuning', async (c) => {
         try {
-            const car_id = parseInt(c.req.param('car_id'), 10)
+            const car_id = (c.req.param('car_id'), 10)
             const tunings = await c.env.DB.prepare(
                 `SELECT * FROM Tunings WHERE car_id = ?1`,
             )
@@ -244,7 +238,7 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .get('/:car_id/maintenance', async (c) => {
         try {
-            const car_id = parseInt(c.req.param('car_id'), 10)
+            const car_id = (c.req.param('car_id'), 10)
             const maintenances = await c.env.DB.prepare(
                 `SELECT * FROM Maintenances WHERE car_id = ?1`,
             )
@@ -258,7 +252,7 @@ export const carRoutes = new Hono<{ Bindings: Bindings }>()
     })
     .get('/:car_id/fuel_efficiency', async (c) => {
         try {
-            const car_id = parseInt(c.req.param('car_id'), 10)
+            const car_id = (c.req.param('car_id'), 10)
             const fuel_efficiencies = await c.env.DB.prepare(
                 `SELECT * FROM FuelEfficiencies WHERE car_id = ?1`,
             )

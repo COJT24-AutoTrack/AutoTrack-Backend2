@@ -78,8 +78,8 @@ export const accidentsRoutes = new Hono<{ Bindings: Bindings }>()
 
     .get('/:accident_id', async (c) => {
         try {
-            const accident_id = parseInt(c.req.param('accident_id'), 10)
-            if (isNaN(accident_id)) {
+            const accident_id = c.req.param('accident_id')
+            if (!accident_id) {
                 return c.json({ error: 'Invalid accident_id' }, 400)
             }
 
@@ -102,8 +102,8 @@ export const accidentsRoutes = new Hono<{ Bindings: Bindings }>()
 
     .put('/:accident_id', zValidator('json', AccidentSchema), async (c) => {
         try {
-            const accident_id = parseInt(c.req.param('accident_id'), 10)
-            if (isNaN(accident_id)) {
+            const accident_id = c.req.param('accident_id')
+            if (!accident_id) {
                 return c.json({ error: 'Invalid accident_id' }, 400)
             }
 
@@ -138,8 +138,8 @@ export const accidentsRoutes = new Hono<{ Bindings: Bindings }>()
 
     .delete('/:accident_id', async (c) => {
         try {
-            const accident_id = parseInt(c.req.param('accident_id'), 10)
-            if (isNaN(accident_id)) {
+            const accident_id = c.req.param('accident_id')
+            if (!accident_id) {
                 return c.json({ error: 'Invalid accident_id' }, 400)
             }
 

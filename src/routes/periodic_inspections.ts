@@ -66,8 +66,8 @@ export const periodicInspectionsRoutes = new Hono<{
 
     .get('/:pi_id', async (c) => {
         try {
-            const pi_id = parseInt(c.req.param('pi_id'), 10)
-            if (isNaN(pi_id)) {
+            const pi_id = c.req.param('pi_id')
+            if (!pi_id) {
                 return c.json({ error: 'Invalid pi_id' }, 400)
             }
 
@@ -90,8 +90,8 @@ export const periodicInspectionsRoutes = new Hono<{
 
     .put('/:pi_id', zValidator('json', PeriodicInspectionSchema), async (c) => {
         try {
-            const pi_id = parseInt(c.req.param('pi_id'), 10)
-            if (isNaN(pi_id)) {
+            const pi_id = c.req.param('pi_id')
+            if (!pi_id) {
                 return c.json({ error: 'Invalid pi_id' }, 400)
             }
 
@@ -125,8 +125,8 @@ export const periodicInspectionsRoutes = new Hono<{
 
     .delete('/:pi_id', async (c) => {
         try {
-            const pi_id = parseInt(c.req.param('pi_id'), 10)
-            if (isNaN(pi_id)) {
+            const pi_id = c.req.param('pi_id')
+            if (!pi_id) {
                 return c.json({ error: 'Invalid pi_id' }, 400)
             }
 

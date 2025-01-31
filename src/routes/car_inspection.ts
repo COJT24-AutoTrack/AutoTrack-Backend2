@@ -204,7 +204,7 @@ export const carInspection = new Hono<{ Bindings: Bindings }>()
 
     .get('/:car_id', async (c) => {
         try {
-            const car_id = parseInt(c.req.param('car_id'))
+            const car_id = c.req.param('car_id')
             const carInspection = await c.env.DB.prepare(
                 `
             SELECT * FROM CarInspections WHERE car_id = ?1
@@ -232,7 +232,7 @@ export const carInspection = new Hono<{ Bindings: Bindings }>()
         zValidator('json', CreateCarInspectionRequestSchema),
         async (c) => {
             try {
-                const car_id = parseInt(c.req.param('car_id'))
+                const car_id = c.req.param('car_id')
                 const carInspection = await c.env.DB.prepare(
                     `
             SELECT * FROM CarInspections WHERE car_id = ?1
@@ -376,7 +376,7 @@ export const carInspection = new Hono<{ Bindings: Bindings }>()
 
     .delete('/:car_id', async (c) => {
         try {
-            const car_id = parseInt(c.req.param('car_id'))
+            const car_id = c.req.param('car_id')
             const carInspection = await c.env.DB.prepare(
                 `
             SELECT * FROM CarInspections WHERE car_id = ?1

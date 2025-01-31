@@ -71,8 +71,8 @@ export const fuelEfficiencyRoutes = new Hono<{ Bindings: Bindings }>()
 
     .get('/:fe_id', async (c) => {
         try {
-            const fe_id = parseInt(c.req.param('fe_id'), 10)
-            if (isNaN(fe_id)) {
+            const fe_id = c.req.param('fe_id')
+            if (!fe_id) {
                 return c.json({ error: 'Invalid fe_id' }, 400)
             }
 
@@ -98,8 +98,8 @@ export const fuelEfficiencyRoutes = new Hono<{ Bindings: Bindings }>()
 
     .put('/:fe_id', zValidator('json', FuelEfficiencySchema), async (c) => {
         try {
-            const fe_id = parseInt(c.req.param('fe_id'), 10)
-            if (isNaN(fe_id)) {
+            const fe_id = c.req.param('fe_id')
+            if (!fe_id) {
                 return c.json({ error: 'Invalid fe_id' }, 400)
             }
 
@@ -141,8 +141,8 @@ export const fuelEfficiencyRoutes = new Hono<{ Bindings: Bindings }>()
 
     .delete('/:fe_id', async (c) => {
         try {
-            const fe_id = parseInt(c.req.param('fe_id'), 10)
-            if (isNaN(fe_id)) {
+            const fe_id = c.req.param('fe_id')
+            if (!fe_id) {
                 return c.json({ error: 'Invalid fe_id' }, 400)
             }
 
