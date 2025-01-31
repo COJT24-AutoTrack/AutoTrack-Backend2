@@ -18,7 +18,7 @@ export const imagesRoutes = new Hono<{ Bindings: Bindings }>().post(
             }
             const data = imageUploadSchema.parse({ file })
 
-            const objectKey = data.file.name
+            const objectKey = `images/${data.file.name}`
             await c.env.R2.put(objectKey, data.file.stream(), {
                 httpMetadata: {
                     contentType: data.file.type,
@@ -26,7 +26,8 @@ export const imagesRoutes = new Hono<{ Bindings: Bindings }>().post(
             })
 
             const url = `https://r2.autotrack.work/${objectKey}`
-
+            console.log('Uploaded image:', url)
+            console.log('return object', c.json({ url }))
             return c.json({ url })
         } catch (err) {
             if (err instanceof Error) {
