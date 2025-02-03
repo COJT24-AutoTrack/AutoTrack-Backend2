@@ -9,6 +9,7 @@ import { accidentsRoutes } from './routes/accidents'
 import { imagesRoutes } from './routes/images'
 import { maintenancesRoutes } from './routes/maintenances'
 import { periodicInspectionsRoutes } from './routes/periodic_inspections'
+import { carInspections } from './routes/car_inspection'
 
 export interface Bindings {
     R2: R2Bucket
@@ -42,6 +43,7 @@ const app = new Hono<{ Bindings: Bindings }>()
     .route('/periodic_inspections', periodicInspectionsRoutes)
     .route('/tunings', tuningRoutes)
     .route('/users', userRoutes)
+    .route('/car_inspections', carInspections)
 
     .get('/', (c) => c.text('AutoTrack API Running'))
     .get('/test', (c) => c.json({ message: 'Hello, World!' }))

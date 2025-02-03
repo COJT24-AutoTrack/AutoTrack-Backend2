@@ -55,7 +55,7 @@ export const CreateCarInspectionRequestSchema = z.object({
     version_number_3: z.union([z.literal('22'), z.null()]),
 })
 
-export const carInspection = new Hono<{ Bindings: Bindings }>()
+export const carInspections = new Hono<{ Bindings: Bindings }>()
     .post(
         '/',
         zValidator('json', CreateCarInspectionRequestSchema),
